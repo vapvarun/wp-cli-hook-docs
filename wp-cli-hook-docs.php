@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP-CLI Hook Documentation Generator
  * Description: A WP-CLI command to generate documentation for do_action and apply_filters hooks in a plugin.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: vapvarun
  * Author URI: https://wbcomdesigns.com
  */
@@ -26,7 +26,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
          * @when after_wp_load
          */
         public function generate( $args, $assoc_args ) {
-            $plugin_dir = trailingslashit( WP_PLUGIN_DIR ) . $args[0];
+            $plugin_dir = realpath(trailingslashit( WP_PLUGIN_DIR ) . $args[0]);
             
             if ( ! is_dir( $plugin_dir ) ) {
                 WP_CLI::error( "Invalid plugin directory: $plugin_dir" );
@@ -122,8 +122,8 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
                 return;
             }
 
-            $relative_path = str_replace( $plugin_dir, '', $file );
-            $doc_filename = str_replace( array( '/', '.php' ), array( '-', '' ), $relative_path ) . '-hooks.md';
+            $relative_path = str_replace( realpath($plugin_dir), '', realpath($file) );
+            $doc_filename = str_replace( array( '/', '\\', '.php' ), array( '-', '-', '' ), $relative_path ) . '-hooks.md';
             $doc_path = trailingslashit( $output_dir ) . $doc_filename;
 
             $doc = "# Hooks Documentation for $relative_path\n\n";
