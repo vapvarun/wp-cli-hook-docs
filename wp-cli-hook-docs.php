@@ -76,7 +76,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
         }
 
         private function scan_files( $dir, &$results = array() ) {
-            $skip_dirs = array('assets', 'images', 'css', 'js', 'vendor', 'node_modules');
+            $skip_dirs = array('assets', 'images', 'css', 'js', 'vendor', 'node_modules','codestar-framework','wbcom');
 
             $files = scandir( $dir );
 
