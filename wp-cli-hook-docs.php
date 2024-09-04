@@ -37,7 +37,10 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
             $output_dir = trailingslashit( $upload_dir['basedir'] ) . 'hook-docs/' . basename( $plugin_dir );
 
             if ( ! file_exists( $output_dir ) ) {
-                mkdir( $output_dir, 0755, true );
+                if ( ! mkdir( $output_dir, 0755, true ) ) {
+                    WP_CLI::error( "Failed to create directory: $output_dir" );
+                    return;
+                }
             }
 
             $files = $this->scan_files( $plugin_dir );
@@ -46,7 +49,9 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
             foreach ( $files as $file ) {
                 if ( pathinfo( $file, PATHINFO_EXTENSION ) === 'php' ) {
                     $hooks = $this->extract_hooks( $file );
-                    $this->generate_docs( $hooks, $plugin_dir, $file, $output_dir );
+                    if ( ! empty( $hooks ) ) {
+                        $this->generate_docs( $hooks, $plugin_dir, $file, $output_dir );
+                    }
                 }
             }
 
@@ -132,6 +137,11 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
             }
 
             file_put_contents( $doc_path, $doc );
+
+            // Verify that the file was created
+            if ( ! file_exists( $doc_path ) ) {
+                WP_CLI::error( "Failed to create documentation file: $doc_path" );
+            }
         }
     }
 
