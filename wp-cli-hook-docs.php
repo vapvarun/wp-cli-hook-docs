@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP-CLI Hook Documentation Generator
  * Description: A WP-CLI command to generate documentation for do_action and apply_filters hooks in a plugin.
- * Version: 1.3.0
+ * Version: 1.5.0
  * Author: vapvarun
  * Author URI: https://wbcomdesigns.com
  */
@@ -34,7 +34,8 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
             }
 
             $upload_dir = wp_upload_dir();
-            $output_dir = trailingslashit( $upload_dir['basedir'] ) . 'hook-docs/' . basename( $plugin_dir );
+            $output_dir = trailingslashit( $upload_dir['basedir'] ) . 'hook-docs';
+            $output_file = $output_dir . '/' . basename( $plugin_dir ) . '-hooks-documentation.md';
 
             if ( ! file_exists( $output_dir ) ) {
                 if ( ! mkdir( $output_dir, 0755, true ) ) {
@@ -46,16 +47,32 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
             $files = $this->scan_files( $plugin_dir );
             $all_hooks = [];
 
+            $toc = "# Hooks Documentation for Plugin: " . basename( $plugin_dir ) . "\n\n";
+            $toc .= "## Table of Contents\n\n";
+            $summary = "## Summary of Hooks\n\n";
+            $details = "";
+
             foreach ( $files as $file ) {
                 if ( pathinfo( $file, PATHINFO_EXTENSION ) === 'php' ) {
                     $hooks = $this->extract_hooks( $file );
                     if ( ! empty( $hooks ) ) {
-                        $this->generate_docs( $hooks, $plugin_dir, $file, $output_dir );
+                        $relative_path = str_replace( realpath($plugin_dir), '', realpath($file) );
+                        $section_title = "### Hooks in $relative_path";
+                        $toc .= "- [$section_title](#hooks-in-" . str_replace([' ', '/'], ['-', ''], strtolower($relative_path)) . ")\n";
+                        $details .= $this->generate_docs_section( $hooks, $relative_path, $summary );
                     }
                 }
             }
 
-            WP_CLI::success( "Documentation generated in: $output_dir" );
+            $doc = $toc . "\n" . $summary . "\n" . $details;
+
+            file_put_contents( $output_file, $doc );
+
+            if ( file_exists( $output_file ) ) {
+                WP_CLI::success( "Documentation generated at: $output_file" );
+            } else {
+                WP_CLI::error( "Failed to create documentation file: $output_file" );
+            }
         }
 
         private function scan_files( $dir, &$results = array() ) {
@@ -117,31 +134,24 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
             return $description ?: 'No description available.';
         }
 
-        private function generate_docs( $hooks, $plugin_dir, $file, $output_dir ) {
+        private function generate_docs_section( $hooks, $relative_path, &$summary ) {
             if ( empty( $hooks ) ) {
-                return;
+                return '';
             }
 
-            $relative_path = str_replace( realpath($plugin_dir), '', realpath($file) );
-            $doc_filename = str_replace( array( '/', '\\', '.php' ), array( '-', '-', '' ), $relative_path ) . '-hooks.md';
-            $doc_path = trailingslashit( $output_dir ) . $doc_filename;
-
-            $doc = "# Hooks Documentation for $relative_path\n\n";
+            $doc = "### Hooks in $relative_path\n\n";
 
             foreach ( $hooks as $hook ) {
-                $doc .= "## `{$hook['hook_name']}`\n";
+                $doc .= "#### `{$hook['hook_name']}`\n";
                 $doc .= "- **Type:** {$hook['type']}\n";
-                $doc .= "- **File:** `{$hook['file']}`\n";
+                $doc .= "- **File:** `$relative_path`\n";
                 $doc .= "- **Line:** {$hook['line']}\n";
                 $doc .= "- **Description:**\n```\n{$hook['description']}\n```\n\n";
+
+                $summary .= "- [{$hook['hook_name']}]({$hook['hook_name']}) in $relative_path at line {$hook['line']}\n";
             }
 
-            file_put_contents( $doc_path, $doc );
-
-            // Verify that the file was created
-            if ( ! file_exists( $doc_path ) ) {
-                WP_CLI::error( "Failed to create documentation file: $doc_path" );
-            }
+            return $doc;
         }
     }
 
