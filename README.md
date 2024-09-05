@@ -1,79 +1,124 @@
-# WP-CLI Hook Documentation Generator
+# WP-CLI Comprehensive Documentation Generator
 
-This plugin provides a WP-CLI command to generate documentation for all `do_action` and `apply_filters` hooks used in a specified plugin directory.
+## Description
+
+The WP-CLI Comprehensive Documentation Generator is a powerful tool that allows developers to automatically generate detailed documentation for their WordPress plugins and themes. This plugin focuses on capturing key components such as hooks, filters, actions, shortcodes, custom post types, and more.
+
+## Features
+
+- **do_action Hooks:** Extract and document all `do_action` hooks.
+- **apply_filters Hooks:** Extract and document all `apply_filters` hooks.
+- **add_action Hooks:** Extract and document all `add_action` hooks.
+- **Shortcodes:** Document shortcodes, including their callback functions and attributes.
+- **Custom Post Types:** Document custom post types and associated meta fields.
 
 ## Installation
 
-1. Download or clone the plugin into your WordPress installation's `wp-content/plugins` directory:
-
-   ```bash
-   git clone https://your-repository-url/wp-content/plugins/wp-cli-hook-docs.git wp-content/plugins/wp-cli-hook-docs
-   ```
-
-2. Activate the plugin via the WordPress Admin Dashboard:
-
-   - Go to **Plugins > Installed Plugins**.
-   - Activate **WP-CLI Hook Documentation Generator**.
+1. Upload the plugin files to the `/wp-content/plugins/wp-cli-comprehensive-doc-gen` directory, or install the plugin through the WordPress plugins screen directly.
+2. Activate the plugin through the 'Plugins' screen in WordPress.
+3. Ensure WP-CLI is installed and available on your server.
 
 ## Usage
 
-### Generate Hook Documentation
+Once the plugin is installed and activated, you can use the following WP-CLI commands to generate documentation:
 
-To generate documentation for a plugin, run the following WP-CLI command:
+### Command: `wp doc-gen generate <plugin_dir>`
 
-```bash
-wp hook-docs generate <plugin-directory>
-```
+This command generates comprehensive documentation for the specified plugin or theme directory.
 
-Replace `<plugin-directory>` with the directory name of the plugin you want to scan. For example, if your plugin is located in `wp-content/plugins/my-plugin`, you would run:
+### Example Usage
 
 ```bash
-wp hook-docs generate my-plugin
+wp doc-gen generate my-plugin-directory
 ```
+
+### Command Options
+
+- `<plugin_dir>`: The directory of the plugin or theme you want to scan. This is a required parameter.
 
 ### Output
 
-The documentation will be generated in the `wp-content/uploads/hook-docs/<plugin-directory>` directory. The documentation is organized as separate Markdown files, each corresponding to a PHP file in the plugin that contains hooks.
+The generated documentation will be saved as a Markdown file in the `uploads/plugin-docs` directory of your WordPress installation. The filename will be based on the name of the plugin or theme directory.
 
-- Each Markdown file includes:
-  - The hook name.
-  - The type of hook (`do_action` or `apply_filters`).
-  - The file and line number where the hook is defined.
-  - A brief description of what the hook does (if available in the code comments).
+### Example Documentation Output
 
-### Skipped Directories
+The documentation will include sections like:
 
-The following directories are skipped during the scan to improve performance and avoid unnecessary files:
+- **do_action Hooks**: Lists all `do_action` hooks with their descriptions, file paths, line numbers, and arguments.
+- **apply_filters Hooks**: Lists all `apply_filters` hooks with their descriptions, file paths, line numbers, and arguments.
+- **add_action Hooks**: Lists all `add_action` hooks with their descriptions, file paths, line numbers, callback functions, priorities, and accepted arguments.
+- **Shortcodes**: Provides details on all shortcodes, including their callback functions, file paths, line numbers, and attributes.
+- **Custom Post Types**: Documents custom post types, including associated meta fields, file paths, and line numbers.
 
-- `assets`
-- `images`
-- `css`
-- `js`
-- `vendor`
-- `node_modules`
+### Example Markdown Format
 
-If your plugin contains additional directories that should be skipped, you can modify the `$skip_dirs` array in the plugin's code.
+````markdown
+## do_action Hooks in `includes/class-myplugin.php`
 
-### Examples
+### Hook: `myplugin_after_save`
 
-#### Example 1: Generate Documentation for a Simple Plugin
+- **Description:** Triggered after a custom post is saved.
+- **File:** `includes/class-myplugin.php`
+- **Line:** 145
+- **Arguments:**
+  1. `$post_id` - The ID of the post that was saved.
+  2. `$post` - The post object.
 
-```bash
-wp hook-docs generate simple-plugin
+**Code Example:**
+
+```php
+do_action( 'myplugin_after_save', $post_id, $post );
+```
+````
+
+````
+
+### Shortcode Example
+
+```markdown
+## Shortcodes in `includes/class-myplugin.php`
+
+### Shortcode: `[myplugin_custom_form]`
+- **Description:** Displays a custom form for users.
+- **File:** `includes/class-myplugin.php`
+- **Line:** 245
+- **Callback Function:** `myplugin_render_custom_form`
+- **Attributes:**
+  - `title` - The title of the form.
+  - `id` - The ID of the form.
+
+**Code Example:**
+```php
+add_shortcode( 'myplugin_custom_form', 'myplugin_render_custom_form' );
+````
+
+**Usage Example:**
+
+```php
+[myplugin_custom_form title="Contact Us" id="123"]
 ```
 
-#### Example 2: Generate Documentation for a Complex Plugin
-
-```bash
-wp hook-docs generate complex-plugin
 ```
 
-### Notes
+## Changelog
 
-- Ensure that your hooks are well-commented in the code to get meaningful descriptions in the documentation.
-- If the plugin directory does not exist, the command will return an error.
+### 1.2.0
+- **Feature:** Modular structure to handle different datatypes (hooks, filters, actions, shortcodes, custom post types).
+- **Improvement:** Enhanced documentation formatting to include detailed code examples.
 
-### Author
+### 1.1.0
+- **Feature:** Added support for shortcode documentation with attributes and usage examples.
+- **Feature:** Basic documentation for custom post types and meta fields.
 
-- **Author:** vapvarun
-- **Website:** [https://wbcomdesigns.com](https://wbcomdesigns.com)
+### 1.0.0
+- Initial release.
+
+## Author
+
+- **vapvarun**
+- [Wbcom Designs](https://wbcomdesigns.com)
+
+## License
+
+This plugin is licensed under the GPLv2 or later.
+```
